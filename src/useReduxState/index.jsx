@@ -37,7 +37,7 @@ const createReduxBlueprint = ({
     const initialState = produce(initialBluePrintState, (draft) => { merge(draft, initialFenceState, initialPropState) });
     const options = produce(initialOptions, (draft) => { merge(draft, initialBlueprintOptions, initialFenceOptions, initialPropOptions) });
     
-    let state = useSelector((state) => state[name] || initialState);
+    let state = useSelector((state) => state[name] || (options.dependent ? undefined : initialState));
 
     let slice = SliceRegistry.slices[name];
     useDebugValue(state);
@@ -57,7 +57,7 @@ const createReduxBlueprint = ({
     }, [dispatch, name, options.persist]);
 
     // If the slice doesn't already exist, and this component is dependent, return undefined and noop updater
-    if (!slice && options.dependent) { return [undefined, noop]; }
+    if (!slice && options.dependent) { return [state, noop]; }
 
     // Create Slice if it doesn't alreay exist
     if (!slice) {
