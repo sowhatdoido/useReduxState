@@ -5,9 +5,10 @@ import { useEffect, useDebugValue, useContext } from 'react';
 import SliceRegistry from './SliceRegistry';
 import { produce } from 'immer';
 import { ReduxStateContext } from './ReduxStateFence';
+import { useRef } from 'react';
 
-const simpleReducer = (state, {payload}) => {
-  return typeof payload === 'function' ? produce(state, payload) : payload;
+const simpleReducer = (s, {payload}) => {
+  return payload;
 }
 
 const initialOptions = {
@@ -27,17 +28,20 @@ const createReduxBlueprint = ({
 }) => {
   const useReduxState = (name, initialPropState, initialPropOptions) => {
     // Setup
+    const immerStateRef = useRef();
     const store = useStore();
     const dispatch = useDispatch();
     const {options: initialFenceOptions, initialState: initialFenceState} = useContext(ReduxStateContext);
 
     // Merge Defaults
     const initialState = produce(initialBluePrintState, (draft) => { merge(draft, initialFenceState, initialPropState) });
-    const options = produce(initialOptions, (draft) => { merge(draft, initialBlueprintOptions, initialFenceOptions, initialPropOptions) })
+    const options = produce(initialOptions, (draft) => { merge(draft, initialBlueprintOptions, initialFenceOptions, initialPropOptions) });
+    
+    let state = useSelector((state) => state[name] || initialState);
 
-    const state = useSelector((state) => state[name] || initialState);
     let slice = SliceRegistry.slices[name];
     useDebugValue(state);
+    immerStateRef.current = state;
 
     // Only after the component has initially rendered
     useEffect(() => {
@@ -69,7 +73,8 @@ const createReduxBlueprint = ({
 
       // Create root dispatcher with actions attached
       const rootDispatcher = (payload) => {
-        dispatch(slice.actions['@@update'](payload));
+        const value =  typeof payload === 'function' ? produce(immerStateRef.current, payload) : payload;
+        dispatch(slice.actions['@@update'](value));
       };
       forIn(slice.actions, (action, index) => rootDispatcher[index] = payload => dispatch(action(payload)));
       slice.rootDispatcher = rootDispatcher;
@@ -88,6 +93,7 @@ const createReduxBlueprint = ({
         return target[prop];
       },
     };
+    // const isPrimative = state instanceof Object;
     const stateWithSelectors = new Proxy(state, proxyHandler);
 
     return [stateWithSelectors, slice?.rootDispatcher];

@@ -41,7 +41,7 @@ const DefaultComponent = ({id = 'Default', ...props}) => {
     <div style={{ textAlign: 'center' }}>
       <div style={{margin: '0 0 5px'}}>Simple: {JSON.stringify(state, ' ', 2)}</div>
       <button onClick={() => updater({ value: state.value - 1})}>subtract</button>
-      <button onClick={() => updater(draft => { draft.value++ })}>add</button>
+      <button onClick={() => updater(draft => { ++draft.value })}>add</button>
     </div>
   );
 };
@@ -149,6 +149,7 @@ const DependentComponent = () => {
 
   return (
     <div style={{ textAlign: 'center' }}>
+      <MyComponent key={`component0`} id={`component0`} dependent={true} />
       {
         list.map((d, i) => <MyComponent key={`component${i}`} id={`component${i}`} /> )
       }
@@ -173,12 +174,6 @@ Dependent.parameters = {
 Dependent.args = {};
 
 // =======================================================
-
-const useFencingReduxState = createReduxBlueprint({
-  initialState: {
-    value: 0,
-  },
-});
 
 const FencingComponent = ({id = 'Fencing', ...props}) => {
   const [list, update] = useState([]);
