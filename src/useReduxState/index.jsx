@@ -21,11 +21,11 @@ const noop = () => {
 };
 
 const createReduxBlueprint = ({
-  initialState: initialBluePrintState,
+  initialState: initialBluePrintState = {},
   reducers = {},
   selectors = {},
   options: initialBlueprintOptions,
-}) => {
+} = {}) => {
   const useReduxState = (name, initialPropState, initialPropOptions) => {
     // Setup
     const immerStateRef = useRef();
@@ -93,8 +93,8 @@ const createReduxBlueprint = ({
         return target[prop];
       },
     };
-    // const isPrimative = state instanceof Object;
-    const stateWithSelectors = new Proxy(state, proxyHandler);
+    const isPrimative = !(state instanceof Object);
+    const stateWithSelectors = isPrimative ? state : new Proxy(state, proxyHandler);
 
     return [stateWithSelectors, slice?.rootDispatcher];
     

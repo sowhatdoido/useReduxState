@@ -21,3 +21,4 @@ Features:
 
 
 - [] BUG: initial state can't be a simple value - a reducer error gets thrown
+- [] BUG: state gets instantly reverted when using fence example with immer function

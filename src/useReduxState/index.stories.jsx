@@ -29,19 +29,15 @@ export default {
 
 // =================================================
 
-const useDefaultReduxState = createReduxBlueprint({
-  initialState: {
-    value: 0,
-  },
-});
+const useDefaultReduxState = createReduxBlueprint();
 
 const DefaultComponent = ({id = 'Default', ...props}) => {
-  const [state, updater] = useDefaultReduxState(id, props);
+  const [state, updater] = useDefaultReduxState(id, {value: 0});
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{margin: '0 0 5px'}}>Simple: {JSON.stringify(state, ' ', 2)}</div>
       <button onClick={() => updater({ value: state.value - 1})}>subtract</button>
-      <button onClick={() => updater(draft => { ++draft.value })}>add</button>
+      <button onClick={() => updater(draft => { draft.value++ })}>add</button>
     </div>
   );
 };
