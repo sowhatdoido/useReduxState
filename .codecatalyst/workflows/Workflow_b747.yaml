@@ -1,0 +1,54 @@
+Name: Workflow_b747
+SchemaVersion: "1.0"
+
+# Optional - Set automatic triggers.
+Triggers:
+  - Type: Push
+    Branches:
+      - main
+
+# Required - Define action configurations.
+Actions:
+  Build_c3:
+    Identifier: aws/build@v1.0.0
+    Inputs:
+      Sources:
+        - WorkflowSource
+    Outputs:
+      AutoDiscoverReports:
+        Enabled: true
+        ReportNamePrefix: rpt
+      Artifacts:
+        - Name: newOutput
+          Files:
+            - build/*.*
+    Configuration:
+      Steps:
+        - Run: yarn run build
+    Compute:
+      Type: EC2
+    Environment:
+      Connections:
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-3yyykx
+          Name: "621895397159"
+      Name: stage
+  AmazonS3publish_e6:
+    Identifier: aws/s3-publish@v1.0.2
+    Environment:
+      Connections:
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-3yyykx
+          Name: "621895397159"
+      Name: stage
+    Inputs:
+      Sources:
+        - WorkflowSource
+      Artifacts:
+        - newOutput
+    Compute:
+      Type: EC2
+    Configuration:
+      DestinationBucketName: sowhatdoido.com
+      TargetPath: /build
+      SourcePath: .
+    DependsOn:
+      - Build_c3
