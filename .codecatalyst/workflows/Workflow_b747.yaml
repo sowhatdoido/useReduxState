@@ -24,6 +24,7 @@ Actions:
             - build/*.*
     Configuration:
       Steps:
+        - Run: yarn install
         - Run: yarn run build
     Compute:
       Type: EC2
